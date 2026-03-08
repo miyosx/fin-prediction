@@ -177,6 +177,48 @@ def signal_scatter(
     return fig
 
 
+def dual_signal_scatter(
+    price: pd.Series,
+    bearish_dates: pd.DatetimeIndex,
+    bullish_dates: pd.DatetimeIndex,
+    title: str = "",
+    height: int = 350,
+) -> go.Figure:
+    """Price line with both bearish (red ▼) and bullish (green ▲) markers."""
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=price.index, y=price.values, name="Price",
+        mode="lines", line=dict(color=COLORS["price"], width=1.5),
+    ))
+
+    if len(bearish_dates) > 0:
+        bp = price.reindex(bearish_dates).dropna()
+        fig.add_trace(go.Scatter(
+            x=bp.index, y=bp.values, name="Bearish Divergence",
+            mode="markers",
+            marker=dict(symbol="triangle-down", size=11, color=COLORS["bearish"],
+                        line=dict(width=1, color="white")),
+        ))
+
+    if len(bullish_dates) > 0:
+        gp = price.reindex(bullish_dates).dropna()
+        fig.add_trace(go.Scatter(
+            x=gp.index, y=gp.values, name="Bullish Divergence",
+            mode="markers",
+            marker=dict(symbol="triangle-up", size=11, color=COLORS["bullish"],
+                        line=dict(width=1, color="white")),
+        ))
+
+    fig.update_layout(
+        title=title,
+        height=height,
+        template="plotly_dark",
+        margin=dict(l=40, r=40, t=40, b=20),
+    )
+    return fig
+
+
 def oscillator_chart(
     series: pd.Series,
     title: str = "",

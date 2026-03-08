@@ -16,6 +16,7 @@ from indicators import (
     follow_through_day,
     lowry,
     mm_breadth,
+    divergence,
 )
 
 logger = logging.getLogger(__name__)
@@ -107,6 +108,22 @@ def build_feature_matrix(force_refresh: bool = False) -> pd.DataFrame:
         dnvol = breadth["NYDNVOL"]["Close"]
         lowry_df = lowry.up_down_vol_ratio(upvol, dnvol)
         parts.append(lowry_df)
+
+    # --- Divergence ---
+    has_adl = not ad_df.empty if "NYAD" in breadth and not breadth["NYAD"].empty else False
+    if (
+        has_adl
+        and "SPX" in indices and not indices["SPX"].empty
+        and "RUT" in indices and not indices["RUT"].empty
+        and "DJI" in indices and not indices["DJI"].empty
+    ):
+        div_df = divergence.compute_all(
+            adl=ad_df["ad_line"],
+            spx=indices["SPX"]["Close"],
+            rut=indices["RUT"]["Close"],
+            dji=indices["DJI"]["Close"],
+        )
+        parts.append(div_df)
 
     # --- MM Breadth ---
     if mm_data:
