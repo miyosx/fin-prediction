@@ -1,0 +1,19 @@
+.env
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Data (large files — gitignore cache, keep manual_imports)
+data/cache_store/
+data/feature_matrix.parquet
+ml/artifacts/
+
+# OS
+.DS_Store
