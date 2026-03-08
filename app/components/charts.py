@@ -1,9 +1,10 @@
 """Reusable Plotly chart builders."""
-from typing import Optional
+from __future__ import annotations
 
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import streamlit as st
 
 
 COLORS = {
@@ -16,6 +17,57 @@ COLORS = {
     "down": "#ef5350",
     "zero_line": "rgba(128,128,128,0.4)",
 }
+
+# TradingView-style interactivity config for all charts
+TV_CONFIG = {
+    "scrollZoom": True,          # scroll wheel zooms
+    "displayModeBar": True,      # always show toolbar
+    "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d"],
+    "modeBarButtonsToAdd": ["drawline", "eraseshape"],
+    "toImageButtonOptions": {"format": "png", "scale": 2},
+}
+
+# Common layout kwargs applied to every figure
+_TV_LAYOUT = dict(
+    dragmode="pan",              # drag to pan, not select
+    template="plotly_dark",
+    margin=dict(l=40, r=40, t=40, b=20),
+    xaxis=dict(
+        rangeslider=dict(visible=False),
+        showspikes=True,
+        spikemode="across",
+        spikesnap="cursor",
+        spikecolor="rgba(200,200,200,0.4)",
+        spikethickness=1,
+    ),
+    yaxis=dict(
+        showspikes=True,
+        spikemode="across",
+        spikesnap="cursor",
+        spikecolor="rgba(200,200,200,0.4)",
+        spikethickness=1,
+        fixedrange=False,
+    ),
+    hovermode="x unified",       # single crosshair across all traces
+)
+
+
+def _apply_tv(fig: go.Figure, height: int, title: str = "") -> go.Figure:
+    """Apply TradingView-style layout to any figure."""
+    layout_kwargs = dict(_TV_LAYOUT)
+    layout_kwargs["height"] = height
+    if title:
+        layout_kwargs["title"] = title
+    fig.update_layout(**layout_kwargs)
+    return fig
+
+
+def render(fig: go.Figure, **kwargs) -> None:
+    """Render a Plotly figure with TradingView-style interactivity.
+
+    Use instead of st.plotly_chart() throughout the app.
+    """
+    st.plotly_chart(fig, config=TV_CONFIG, use_container_width=True, **kwargs)
 
 
 def price_chart(
@@ -64,14 +116,8 @@ def price_chart(
             row=2, col=1,
         )
 
-    fig.update_layout(
-        title=title,
-        height=height,
-        xaxis_rangeslider_visible=False,
-        showlegend=True,
-        template="plotly_dark",
-        margin=dict(l=40, r=40, t=40, b=20),
-    )
+    _apply_tv(fig, height, title)
+    fig.update_layout(showlegend=True, xaxis_rangeslider_visible=False)
     return fig
 
 
@@ -93,12 +139,7 @@ def line_chart(
     if zero_line:
         fig.add_hline(y=0, line=dict(color=COLORS["zero_line"], dash="dash", width=1))
 
-    fig.update_layout(
-        title=title,
-        height=height,
-        template="plotly_dark",
-        margin=dict(l=40, r=40, t=40, b=20),
-    )
+    _apply_tv(fig, height, title)
     return fig
 
 
@@ -134,13 +175,8 @@ def zone_area_chart(
         fill="tozeroy", fillcolor="rgba(66,165,245,0.08)",
     ))
 
-    fig.update_layout(
-        title=title or symbol,
-        height=height,
-        yaxis=dict(range=[0, 100]),
-        template="plotly_dark",
-        margin=dict(l=40, r=40, t=40, b=20),
-    )
+    _apply_tv(fig, height, title or symbol)
+    fig.update_layout(yaxis=dict(range=[0, 100], fixedrange=False))
     return fig
 
 
@@ -168,12 +204,7 @@ def signal_scatter(
                         line=dict(width=1, color="white")),
         ))
 
-    fig.update_layout(
-        title=title,
-        height=height,
-        template="plotly_dark",
-        margin=dict(l=40, r=40, t=40, b=20),
-    )
+    _apply_tv(fig, height, title)
     return fig
 
 
@@ -210,12 +241,7 @@ def dual_signal_scatter(
                         line=dict(width=1, color="white")),
         ))
 
-    fig.update_layout(
-        title=title,
-        height=height,
-        template="plotly_dark",
-        margin=dict(l=40, r=40, t=40, b=20),
-    )
+    _apply_tv(fig, height, title)
     return fig
 
 
@@ -232,11 +258,6 @@ def oscillator_chart(
         x=series.index, y=series.values, marker_color=colors, name=series.name or "Value"
     ))
     fig.add_hline(y=0, line=dict(color=COLORS["zero_line"], dash="dash", width=1))
-    fig.update_layout(
-        title=title,
-        height=height,
-        template="plotly_dark",
-        margin=dict(l=40, r=40, t=40, b=20),
-        bargap=0,
-    )
+    _apply_tv(fig, height, title)
+    fig.update_layout(bargap=0)
     return fig

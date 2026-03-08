@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 
 from app.state import init_session_state
-from app.components.charts import signal_scatter, line_chart
+from app.components.charts import signal_scatter, line_chart, render
 from app.components.signal_card import signal_grid
 from app.components.data_freshness import freshness_banner
 from data.fetchers.index_fetcher import fetch_index

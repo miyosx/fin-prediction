@@ -113,11 +113,13 @@ fig_osc.add_trace(go.Bar(
     opacity=0.85,
 ))
 
-# Signal zones
-fig_osc.add_hrect(y0=100, y1=osc.max() * 1.1 if osc.max() > 100 else 200,
+# Signal zones — clamp to data range so shading doesn't distort the y-axis
+osc_max = max(osc.max(), 150)
+osc_min = min(osc.min(), -150)
+fig_osc.add_hrect(y0=100, y1=osc_max,
                   fillcolor=COLORS["bullish"], opacity=0.06, line_width=0,
                   annotation_text="Overbought / Climactic surge", annotation_position="top left")
-fig_osc.add_hrect(y0=osc.min() * 1.1 if osc.min() < -100 else -200, y1=-100,
+fig_osc.add_hrect(y0=osc_min, y1=-100,
                   fillcolor=COLORS["bearish"], opacity=0.06, line_width=0,
                   annotation_text="Oversold / Climactic selling", annotation_position="bottom left")
 
@@ -146,10 +148,10 @@ if cross_down.any():
                     line=dict(width=1, color="white")),
     ))
 
-fig_osc.update_layout(height=300, template="plotly_dark", bargap=0,
-                       margin=dict(l=40, r=60, t=30, b=20),
-                       title="McClellan Oscillator — markers show zero-line crossings (buy/sell signals)")
-st.plotly_chart(fig_osc, use_container_width=True)
+from app.components.charts import TV_CONFIG, _apply_tv  # noqa: E402 (local import)
+_apply_tv(fig_osc, 300, "McClellan Oscillator — markers show zero-line crossings (buy/sell signals)")
+fig_osc.update_layout(bargap=0, yaxis=dict(range=[osc_min * 1.05, osc_max * 1.05]))
+st.plotly_chart(fig_osc, config=TV_CONFIG, use_container_width=True)
 
 # ------------------------------------------------------------------ #
 # McClellan Summation Index
@@ -192,17 +194,19 @@ summ = ad_plot["mcclellan_summation"]
 
 fig_summ = go.Figure()
 
+# Clamp bounds to data range
+summ_max = max(summ.max(), 1100)
+summ_min = min(summ.min(), -1100)
+
 # Shade above/below zero
-fig_summ.add_hrect(y0=0, y1=max(summ.max() * 1.1, 500),
-                   fillcolor=COLORS["bullish"], opacity=0.04, line_width=0)
-fig_summ.add_hrect(y0=min(summ.min() * 1.1, -500), y1=0,
-                   fillcolor=COLORS["bearish"], opacity=0.04, line_width=0)
+fig_summ.add_hrect(y0=0, y1=summ_max, fillcolor=COLORS["bullish"], opacity=0.04, line_width=0)
+fig_summ.add_hrect(y0=summ_min, y1=0, fillcolor=COLORS["bearish"], opacity=0.04, line_width=0)
 
 # Overbought / oversold bands
-fig_summ.add_hrect(y0=1000, y1=max(summ.max() * 1.1, 1200),
+fig_summ.add_hrect(y0=1000, y1=summ_max,
                    fillcolor=COLORS["bullish"], opacity=0.08, line_width=0,
                    annotation_text="Overbought (+1000)", annotation_position="top left")
-fig_summ.add_hrect(y0=min(summ.min() * 1.1, -1200), y1=-1000,
+fig_summ.add_hrect(y0=summ_min, y1=-1000,
                    fillcolor=COLORS["bearish"], opacity=0.08, line_width=0,
                    annotation_text="Oversold (−1000)", annotation_position="bottom left")
 
@@ -238,10 +242,9 @@ if s_cross_down.any():
                     line=dict(width=1, color="white")),
     ))
 
-fig_summ.update_layout(height=320, template="plotly_dark",
-                        margin=dict(l=40, r=60, t=30, b=20),
-                        title="McClellan Summation Index — ★ marks major zero-line crossings")
-st.plotly_chart(fig_summ, use_container_width=True)
+_apply_tv(fig_summ, 320, "McClellan Summation Index — ★ marks major zero-line crossings")
+fig_summ.update_layout(yaxis=dict(range=[summ_min * 1.05, summ_max * 1.05]))
+st.plotly_chart(fig_summ, config=TV_CONFIG, use_container_width=True)
 
 # ------------------------------------------------------------------ #
 # Raw data

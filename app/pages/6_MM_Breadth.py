@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 
 from app.state import init_session_state
-from app.components.charts import zone_area_chart
+from app.components.charts import zone_area_chart, render
 from app.components.signal_card import signal_grid
 from app.components.data_freshness import freshness_banner
 from data.fetchers.mm_breadth_fetcher import fetch_all_mm

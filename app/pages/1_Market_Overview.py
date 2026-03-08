@@ -7,7 +7,7 @@ import streamlit as st
 import pandas as pd
 
 from app.state import init_session_state
-from app.components.charts import price_chart, line_chart
+from app.components.charts import price_chart, line_chart, render
 from app.components.signal_card import signal_grid
 from app.components.data_freshness import freshness_banner
 from data.fetchers.index_fetcher import fetch_all_indices
@@ -64,10 +64,7 @@ if selected and selected in indices:
     df = indices[selected]
     if not df.empty:
         df_plot = df[df.index >= cutoff]
-        st.plotly_chart(
-            price_chart(df_plot, title=f"{selected} Price", ma_windows=[50, 200], height=450),
-            use_container_width=True,
-        )
+        render(price_chart(df_plot, title=f"{selected} Price", ma_windows=[50, 200], height=450))
 
 # MA Distance chart (all indices)
 if not ma_df.empty:

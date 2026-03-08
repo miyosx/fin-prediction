@@ -13,6 +13,7 @@ from app.components.charts import (
     dual_signal_scatter,
     line_chart,
     oscillator_chart,
+    render,
 )
 from app.components.signal_card import signal_grid
 from app.components.data_freshness import freshness_banner
@@ -198,10 +199,7 @@ else:
 with st.expander("Individual Slopes"):
     slope_cols = {c.replace("_slope", "").upper(): div_plot[c]
                   for c in div_plot.columns if c.endswith("_slope")}
-    st.plotly_chart(
-        line_chart(slope_cols, title="Rolling Slopes (z-score units per day)", zero_line=True, height=280),
-        use_container_width=True,
-    )
+    render(line_chart(slope_cols, title="Rolling Slopes (z-score units per day)", zero_line=True, height=280))
 
 # ------------------------------------------------------------------ #
 # Raw data
